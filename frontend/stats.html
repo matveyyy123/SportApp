@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SportApp — Статистика</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>СТАТИСТИКА</h1>
+        </header>
+
+        <div class="stats-summary">
+            <div class="stat-big-card">
+                <span class="stat-big-label">Тренировок</span>
+                <span class="stat-big-number" id="totalWorkouts">0</span>
+            </div>
+            <div class="stat-big-card">
+                <span class="stat-big-label">Минут</span>
+                <span class="stat-big-number" id="totalMinutes">0</span>
+            </div>
+            <div class="stat-big-card">
+                <span class="stat-big-label">Упражнений</span>
+                <span class="stat-big-number" id="totalExercises">0</span>
+            </div>
+        </div>
+
+        <h2 style="margin:1.5rem 0 1rem 1rem; font-size:1.2rem;">По группам мышц</h2>
+        <div class="stats-muscles" id="musclesStats">
+            <div class="stat-muscle-item">
+                <span class="muscle-name">Грудь</span>
+                <div class="muscle-bar"><div class="muscle-fill" style="width:75%;"></div></div>
+                <span class="muscle-count">12</span>
+            </div>
+            <div class="stat-muscle-item">
+                <span class="muscle-name">Спина</span>
+                <div class="muscle-bar"><div class="muscle-fill" style="width:60%;"></div></div>
+                <span class="muscle-count">9</span>
+            </div>
+            <div class="stat-muscle-item">
+                <span class="muscle-name">Ноги</span>
+                <div class="muscle-bar"><div class="muscle-fill" style="width:90%;"></div></div>
+                <span class="muscle-count">14</span>
+            </div>
+            <div class="stat-muscle-item">
+                <span class="muscle-name">Плечи</span>
+                <div class="muscle-bar"><div class="muscle-fill" style="width:45%;"></div></div>
+                <span class="muscle-count">7</span>
+            </div>
+            <div class="stat-muscle-item">
+                <span class="muscle-name">Пресс</span>
+                <div class="muscle-bar"><div class="muscle-fill" style="width:80%;"></div></div>
+                <span class="muscle-count">13</span>
+            </div>
+            <div class="stat-muscle-item">
+                <span class="muscle-name">Руки</span>
+                <div class="muscle-bar"><div class="muscle-fill" style="width:55%;"></div></div>
+                <span class="muscle-count">8</span>
+            </div>
+        </div>
+
+        <h2 style="margin:1.5rem 0 1rem 1rem;font-size:1.2rem;">Календарь тренировок</h2>
+        <div class="calendar-container">
+            <div class="calendar-nav">
+                <button id="prevMonth" class="btn-calendar-nav"><i class="fa-solid fa-chevron-left"></i></button>
+                <span id="currentMonthYear">Июль 2026</span>
+                <button id="nextMonth" class="btn-calendar-nav"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="calendar-grid">
+                <div class="calendar-weekday">Пн</div>
+                <div class="calendar-weekday">Вт</div>
+                <div class="calendar-weekday">Ср</div>
+                <div class="calendar-weekday">Чт</div>
+                <div class="calendar-weekday">Пт</div>
+                <div class="calendar-weekday">Сб</div>
+                <div class="calendar-weekday">Вс</div>
+                <div id="calendarDays" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;grid-column:1/-1;"></div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <div class="nav-items">
+            <button class="nav-item active" onclick="window.location.href='stats.html'">
+                <i class="fa-solid fa-chart-bar"></i>
+            </button>
+            <button class="nav-item" onclick="window.location.href='workouts.html'">
+                <i class="fa-solid fa-dumbbell"></i>
+            </button>
+            <button class="nav-item" onclick="window.location.href='profile.html'">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- ВЕСЬ JS КОД ВНУТРИ HTML (перенесен из stats.js + auth.js)    -->
+    <!-- ============================================================ -->
+    <script>
+        // ===== api.js код =====
+        const API_URL = 'http://localhost:5000/api';
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function setToken(token) {
+            localStorage.setItem('token', token);
+        }
+
+        function removeToken() {
+            localStorage.removeItem('token');
+        }
+
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const token = getToken();
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+            };
+            if (token) {
+                options.headers['x-auth-token'] = token;
+            }
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Что-то пошло не так');
+                }
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // ===== ПРОВЕРКА АВТОРИЗАЦИИ =====
+        (async function checkAuth() {
+            const token = getToken();
+            if (!token) {
+                alert('Пожалуйста, войдите в систему');
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                await apiRequest('/auth/me', 'GET');
+            } catch (error) {
+                removeToken();
+                alert('Сессия истекла, войдите заново');
+                window.location.href = 'login.html';
+            }
+        })();
+
+        // ===== СТАТИСТИКА =====
+        async function loadStats() {
+            try {
+                const workouts = await apiRequest('/workouts', 'GET');
+                const total = workouts?.length || 0;
+                const totalMinutes = workouts?.reduce((sum, w) => sum + (w.duration || 0), 0) || 0;
+                const totalExercises = workouts?.reduce((sum, w) => sum + (w.exercises?.length || 0), 0) || 0;
+                document.getElementById('totalWorkouts').textContent = total;
+                document.getElementById('totalMinutes').textContent = totalMinutes;
+                document.getElementById('totalExercises').textContent = totalExercises;
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+        loadStats();
+
+        // ===== КАЛЕНДАРЬ (из stats.js) =====
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        const workoutDays = [
+            new Date(2026, 6, 3), new Date(2026, 6, 5), new Date(2026, 6, 8),
+            new Date(2026, 6, 10), new Date(2026, 6, 12), new Date(2026, 6, 15),
+            new Date(2026, 6, 18), new Date(2026, 6, 20), new Date(2026, 6, 22),
+            new Date(2026, 6, 25), new Date(2026, 6, 27), new Date(2026, 6, 29)
+        ];
+
+        function renderCalendar(month, year) {
+            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                               'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            document.getElementById('currentMonthYear').textContent = `${monthNames[month]} ${year}`;
+            const firstDay = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startDayOfWeek = firstDay.getDay() || 7;
+            const container = document.getElementById('calendarDays');
+            container.innerHTML = '';
+            for (let i = 1; i < startDayOfWeek; i++) {
+                const empty = document.createElement('div');
+                empty.classList.add('calendar-empty');
+                container.appendChild(empty);
+            }
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayEl = document.createElement('div');
+                dayEl.classList.add('calendar-day');
+                dayEl.textContent = day;
+                const hasWorkout = workoutDays.some(d => 
+                    d.getDate() === day && d.getMonth() === month && d.getFullYear() === year
+                );
+                if (hasWorkout) dayEl.classList.add('has-workout');
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayEl.classList.add('today');
+                }
+                container.appendChild(dayEl);
+            }
+        }
+
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderCalendar(currentMonth, currentYear);
+        });
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderCalendar(currentMonth, currentYear);
+        });
+        renderCalendar(currentMonth, currentYear);
+    </script>
+</body>
+</html>

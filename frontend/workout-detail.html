@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SportApp — Тренировка</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main class="dashboard-container">
+        <header class="dashboard-header">
+            <h1 id="workoutTitle">ТРЕНИРОВКА - ГРУДЬ</h1>
+        </header>
+
+        <div class="workout-levels" id="levelsContainer">
+            <!-- Заполняется через JS -->
+        </div>
+    </main>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-items">
+            <button class="nav-item" onclick="window.location.href='stats.html'">
+                <i class="fa-solid fa-chart-bar"></i>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='workouts.html'">
+                <i class="fa-solid fa-dumbbell"></i>
+            </button>
+            <button class="nav-item" onclick="window.location.href='profile.html'">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category') || 'Грудь';
+        document.getElementById('workoutTitle').textContent = 'ТРЕНИРОВКА - ' + category.toUpperCase();
+
+        const images = {
+            'Грудь': '../images/breast.png',
+            'Спина': '../images/back.png',
+            'Ноги': '../images/legs.png',
+            'Плечи': '../images/shoulder.png',
+            'Пресс': '../images/press.png',
+            'Руки': '../images/bodybuilding.png'
+        };
+
+        const imgSrc = images[category] || '../images/breast.png';
+        const levelsContainer = document.getElementById('levelsContainer');
+
+        const levelNames = ['1 Lv', '2 Lv', '3 Lv'];
+        const levelDescs = ['Базовые упражнения', 'Средний уровень', 'Продвинутый уровень'];
+
+        // ===== КАРТОЧКИ БЕЗ PLAY, С КЛИКОМ НА ВСЮ КАРТОЧКУ =====
+        levelsContainer.innerHTML = levelNames.map((name, i) => `
+            <div class="level-card" onclick="startWorkout('${category}', '${name}')">
+                <div class="level-icon"><img src="${imgSrc}" style="width:50px;height:50px;"></div>
+                <div class="level-info">
+                    <h3>${name} ${category}</h3>
+                    <p>${levelDescs[i]}</p>
+                </div>
+            </div>
+        `).join('');
+
+        // ===== ПРИ КЛИКЕ НА КАРТОЧКУ =====
+        function startWorkout(category, level) {
+            window.location.href = 'workout-session.html?category=' + encodeURIComponent(category) + '&level=' + encodeURIComponent(level);
+        }
+    </script>
+</body>
+</html>

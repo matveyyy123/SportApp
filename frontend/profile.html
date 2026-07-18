@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SportApp — Профиль</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main class="main-content">
+        <!-- ПРОФИЛЬ -->
+        <div class="profile-container">
+            <div class="profile-block">
+                <div class="profile-avatar"><span id="profileInitials">А</span></div>
+                <h2 id="profileName">Пользователь</h2>
+                <p id="profileEmail">email@mail.ru</p>
+                <div class="profile-info">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>Дата регистрации: <strong id="profileDate">—</strong></span>
+                </div>
+                <button class="btn-primary-center" id="editProfileBtn">
+                    <i class="fa-regular fa-pen-to-square"></i> Редактировать профиль
+                </button>
+                <div id="editForm" style="display:none;margin-top:1.5rem;text-align:left;">
+                    <div class="form-group"><label>Имя</label><input type="text" id="editName" /></div>
+                    <div class="form-group"><label>Почта</label><input type="email" id="editEmail" /></div>
+                    <button class="btn-primary" id="saveProfileBtn">Сохранить</button>
+                    <button class="btn-secondary" id="cancelEditBtn">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ДРУЗЬЯ -->
+        <div class="profile-container">
+            <div class="profile-block friends-block">
+                <div class="friends-header">
+                    <h3><i class="fa-solid fa-user-group"></i> Друзья</h3>
+                </div>
+                <div class="stats-mini">
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-number" id="friendsTotal">0</span>
+                        <span class="stat-mini-label">Всего друзей</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-number" id="friendsOnline">0</span>
+                        <span class="stat-mini-label">В сети</span>
+                    </div>
+                    <div class="stat-mini-item">
+                        <span class="stat-mini-number" id="friendsRequests">0</span>
+                        <span class="stat-mini-label">Заявок</span>
+                    </div>
+                </div>
+                <div class="add-friend">
+                    <input type="text" id="friendInput" placeholder="Введите имя или email" />
+                    <button id="addFriendBtn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+                <div id="friendsList" class="friends-list">
+                    <div class="empty-friends">
+                        <i class="fa-regular fa-face-smile"></i>
+                        <p>У вас пока нет друзей</p>
+                        <span>Добавьте первого друга!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <div class="nav-items">
+            <button class="nav-item" onclick="window.location.href='stats.html'">
+                <i class="fa-solid fa-chart-bar"></i>
+            </button>
+            <button class="nav-item" onclick="window.location.href='workouts.html'">
+                <i class="fa-solid fa-dumbbell"></i>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='profile.html'">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- ВЕСЬ JS КОД ВНУТРИ HTML (перенесен из profile.js + auth.js)  -->
+    <!-- ============================================================ -->
+    <script>
+        // ===== api.js код =====
+        const API_URL = 'http://localhost:5000/api';
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function setToken(token) {
+            localStorage.setItem('token', token);
+        }
+
+        function removeToken() {
+            localStorage.removeItem('token');
+        }
+
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const token = getToken();
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+            };
+            if (token) {
+                options.headers['x-auth-token'] = token;
+            }
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Что-то пошло не так');
+                }
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // ===== ПРОВЕРКА АВТОРИЗАЦИИ (из auth.js) =====
+        (async function checkAuth() {
+            const token = getToken();
+            if (!token) {
+                alert('Пожалуйста, войдите в систему');
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                await apiRequest('/auth/me', 'GET');
+            } catch (error) {
+                removeToken();
+                alert('Сессия истекла, войдите заново');
+                window.location.href = 'login.html';
+            }
+        })();
+
+        // ===== ЗАГРУЗКА ПРОФИЛЯ (из profile.js) =====
+        async function loadProfile() {
+            try {
+                const token = getToken();
+                if (!token) { window.location.href = 'login.html'; return; }
+                const response = await apiRequest('/auth/me', 'GET');
+                const user = response.user;
+                document.getElementById('profileName').textContent = user.name;
+                document.getElementById('profileEmail').textContent = user.email;
+                document.getElementById('profileInitials').textContent = user.name.charAt(0).toUpperCase();
+                if (user.createdAt) {
+                    const date = new Date(user.createdAt);
+                    document.getElementById('profileDate').textContent = date.toLocaleDateString('ru-RU', {
+                        day: '2-digit', month: 'long', year: 'numeric'
+                    });
+                }
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editEmail').value = user.email;
+            } catch (error) {
+                console.error('Ошибка загрузки профиля:', error);
+                alert('❌ ' + error.message);
+            }
+        }
+
+        // ===== РЕДАКТИРОВАНИЕ ПРОФИЛЯ (из profile.js) =====
+        const editBtn = document.getElementById('editProfileBtn');
+        const editForm = document.getElementById('editForm');
+        const cancelBtn = document.getElementById('cancelEditBtn');
+
+        editBtn?.addEventListener('click', () => {
+            editForm.style.display = 'block';
+            editBtn.style.display = 'none';
+        });
+        cancelBtn?.addEventListener('click', () => {
+            editForm.style.display = 'none';
+            editBtn.style.display = '';  // ← Убираем inline-стиль, возвращаем CSS
+        });
+
+        document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
+            const name = document.getElementById('editName').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            if (!name || !email) { alert('Заполните все поля'); return; }
+            try {
+                const response = await apiRequest('/auth/profile', 'PUT', { name, email });
+                document.getElementById('profileName').textContent = response.user.name;
+                document.getElementById('profileEmail').textContent = response.user.email;
+                document.getElementById('profileInitials').textContent = response.user.name.charAt(0).toUpperCase();
+                alert('✅ Профиль обновлён!');
+                editForm.style.display = 'none';
+                editBtn.style.display = '';
+            } catch (error) {
+                alert('❌ ' + error.message);
+            }
+        });
+
+        // ===== ДРУЗЬЯ (из profile.js) =====
+        let friends = [
+            { name: 'Алексей', email: 'alex@mail.ru', avatar: 'А' },
+            { name: 'Мария', email: 'maria@mail.ru', avatar: 'М' },
+        ];
+
+        function renderFriends() {
+            const container = document.getElementById('friendsList');
+            if (friends.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-friends">
+                        <i class="fa-regular fa-face-smile"></i>
+                        <p>У вас пока нет друзей</p>
+                        <span>Добавьте первого друга!</span>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = friends.map((friend, index) => `
+                <div class="friend-item">
+                    <div class="friend-avatar">${friend.avatar}</div>
+                    <div class="friend-info">
+                        <span class="friend-name">${friend.name}</span>
+                        <span class="friend-email">${friend.email}</span>
+                    </div>
+                    <button class="friend-remove" data-index="${index}"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
+            `).join('');
+            document.querySelectorAll('.friend-remove').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.dataset.index);
+                    if (confirm(`Удалить друга "${friends[index].name}"?`)) {
+                        friends.splice(index, 1);
+                        renderFriends();
+                        updateFriendsStats();
+                    }
+                });
+            });
+        }
+
+        function updateFriendsStats() {
+            document.getElementById('friendsTotal').textContent = friends.length;
+            document.getElementById('friendsOnline').textContent = Math.floor(friends.length / 2);
+            document.getElementById('friendsRequests').textContent = Math.floor(friends.length / 3);
+        }
+
+        document.getElementById('addFriendBtn')?.addEventListener('click', () => {
+            const value = document.getElementById('friendInput').value.trim();
+            if (!value) { alert('Введите имя или email друга'); return; }
+            if (friends.some(f => f.email === value || f.name.toLowerCase() === value.toLowerCase())) {
+                alert('Этот друг уже в списке');
+                document.getElementById('friendInput').value = '';
+                return;
+            }
+            friends.push({
+                name: value,
+                email: value.includes('@') ? value : `${value}@mail.ru`,
+                avatar: value.charAt(0).toUpperCase()
+            });
+            document.getElementById('friendInput').value = '';
+            renderFriends();
+            updateFriendsStats();
+        });
+
+        document.getElementById('friendInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('addFriendBtn').click();
+        });
+
+        loadProfile();
+        renderFriends();
+        updateFriendsStats();
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SportApp — Регистрация</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Создать аккаунт</h2>
+            <form id="registerForm" novalidate>
+                <div class="form-group">
+                    <input type="text" id="regName" placeholder="Имя" required />
+                    <span class="error-message" id="regNameError"></span>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="regEmail" placeholder="Почта" required />
+                    <span class="error-message" id="regEmailError"></span>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="regPassword" placeholder="Пароль" required />
+                    <span class="error-message" id="regPasswordError"></span>
+                </div>
+                <button type="submit" class="btn-primary">Зарегистрироваться</button>
+            </form>
+            <p class="auth-switch">
+                Уже есть аккаунт? <a href="login.html">Войти в аккаунт</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ВЕСЬ JS КОД ВНУТРИ HTML (перенесен из auth.js)              -->
+    <!-- ============================================================ -->
+    <script>
+        // ===== api.js код (дублируется для каждой страницы) =====
+        const API_URL = 'http://localhost:5000/api';
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function setToken(token) {
+            localStorage.setItem('token', token);
+        }
+
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const token = getToken();
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+            };
+            if (token) {
+                options.headers['x-auth-token'] = token;
+            }
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Что-то пошло не так');
+                }
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // ===== РЕГИСТРАЦИЯ (из auth.js) =====
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            const nameInput = document.getElementById('regName');
+            const emailInput = document.getElementById('regEmail');
+            const passwordInput = document.getElementById('regPassword');
+            const nameError = document.getElementById('regNameError');
+            const emailError = document.getElementById('regEmailError');
+            const passwordError = document.getElementById('regPasswordError');
+
+            function validateName(value) {
+                return value.trim().length >= 2 ? null : 'Имя минимум 2 символа';
+            }
+
+            function validateEmail(value) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(value.trim()) ? null : 'Введите корректную почту';
+            }
+
+            function validatePassword(value) {
+                return value.length >= 8 ? null : 'Пароль минимум 8 символов';
+            }
+
+            function validateField(input, errorElement, validator) {
+                const error = validator(input.value);
+                if (error) {
+                    input.classList.add('error');
+                    errorElement.textContent = error;
+                    return false;
+                } else {
+                    input.classList.remove('error');
+                    errorElement.textContent = '';
+                    return true;
+                }
+            }
+
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const isNameValid = validateField(nameInput, nameError, validateName);
+                const isEmailValid = validateField(emailInput, emailError, validateEmail);
+                const isPasswordValid = validateField(passwordInput, passwordError, validatePassword);
+
+                if (!isNameValid || !isEmailValid || !isPasswordValid) return;
+
+                const btn = registerForm.querySelector('.btn-primary');
+                btn.textContent = 'Отправка...';
+                btn.disabled = true;
+
+                try {
+                    const userData = {
+                        name: nameInput.value.trim(),
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value
+                    };
+                    const response = await apiRequest('/auth/register', 'POST', userData);
+                    setToken(response.token);
+                    alert('✅ Регистрация прошла успешно!');
+                    window.location.href = 'workouts.html';
+                } catch (error) {
+                    alert('❌ ' + error.message);
+                } finally {
+                    btn.textContent = 'Зарегистрироваться';
+                    btn.disabled = false;
+                }
+            });
+
+            nameInput.addEventListener('blur', () => validateField(nameInput, nameError, validateName));
+            emailInput.addEventListener('blur', () => validateField(emailInput, emailError, validateEmail));
+            passwordInput.addEventListener('blur', () => validateField(passwordInput, passwordError, validatePassword));
+        }
+    </script>
+</body>
+</html>

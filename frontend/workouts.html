@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SportApp — Тренировки</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>ТРЕНИРОВКИ</h1>
+        </header>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="ready">Готовые</button>
+            <button class="tab-btn" data-tab="my">Мои</button>
+        </div>
+
+        <!-- Готовые тренировки -->
+        <div id="tab-ready" class="tab-content active">
+            <div class="catalog-grid" id="catalogGrid">
+                <!-- Категории -->
+                <div class="category-card" data-category="Грудь">
+                    <div class="category-icon"><img src="../images/breast.png" style="width:50px;height:50px;"></div>
+                    <div class="category-info"><h3>Грудь</h3><p>Силовая</p></div>
+                </div>
+                <div class="category-card" data-category="Спина">
+                    <div class="category-icon"><img src="../images/back.png" style="width:50px;height:50px;"></div>
+                    <div class="category-info"><h3>Спина</h3><p>Силовая</p></div>
+                </div>
+                <div class="category-card" data-category="Ноги">
+                    <div class="category-icon"><img src="../images/legs.png" style="width:50px;height:50px;"></div>
+                    <div class="category-info"><h3>Ноги</h3><p>Силовая</p></div>
+                </div>
+                <div class="category-card" data-category="Плечи">
+                    <div class="category-icon"><img src="../images/shoulder.png" style="width:50px;height:50px;"></div>
+                    <div class="category-info"><h3>Плечи</h3><p>Силовая</p></div>
+                </div>
+                <div class="category-card" data-category="Пресс">
+                    <div class="category-icon"><img src="../images/press.png" style="width:50px;height:50px;"></div>
+                    <div class="category-info"><h3>Пресс</h3><p>Силовая</p></div>
+                </div>
+                <div class="category-card" data-category="Руки">
+                    <div class="category-icon"><img src="../images/bodybuilding.png" style="width:50px;height:50px;"></div>
+                    <div class="category-info"><h3>Руки</h3><p>Силовая</p></div>
+                </div>
+            </div>
+        </div>
+
+<!-- Мои тренировки -->
+<div id="tab-my" class="tab-content">
+    <!-- КНОПКА "Создать свою тренировку" (видна всегда) -->
+    <div class="custom-workout">
+        <button class="btn-custom" onclick="toggleCreateForm()">
+            <i class="fa-solid fa-plus-circle"></i>
+            Создать свою тренировку
+        </button>
+    </div>
+
+    <!-- ФОРМА СОЗДАНИЯ (скрыта по умолчанию) -->
+    <div id="createForm" style="display:none; margin-top:1.5rem;">
+        <!-- ЗАГОЛОВОК -->
+        <h3 style="font-size:1.3rem; margin-bottom:1rem; color:var(--dark);">
+            <i class="fa-solid fa-pen-to-square" style="color:var(--crimson);"></i> 
+            Создание тренировки
+        </h3>
+
+        <form id="workoutForm">
+<!-- ДВА ОДИНАКОВЫХ ПОЛЯ ВВОДА (оба input) -->
+<div class="form-group">
+    <input type="text" id="workoutTitle" placeholder="Название тренировки" required style="font-size:1rem; padding:0.8rem 1rem; width:100%; max-width:400px;" />
+</div>
+<div class="form-group">
+    <input type="text" id="workoutNotes" placeholder="Заметки к тренировке" style="font-size:1rem; padding:0.8rem 1rem; width:100%; max-width:400px;" />
+</div>
+            
+            <!-- УПРАЖНЕНИЯ (красивый заголовок) -->
+            <div class="form-group" style="margin-top:1.5rem;">
+                <h3 style="font-size:1.3rem; margin-bottom:0.8rem; color:var(--dark);">
+                    <i class="fa-solid fa-dumbbell" style="color:var(--crimson);"></i> 
+                    Упражнения
+                </h3>
+                <div id="exercisesContainer"></div>
+                <button type="button" class="btn-secondary btn-sm" onclick="addExerciseField()" style="margin-top:0.5rem;">
+                    + Добавить упражнение
+                </button>
+            </div>
+            
+            <div style="display:flex; gap:0.8rem; margin-top:1.5rem; flex-wrap:wrap;">
+                <button type="submit" class="btn-primary" style="flex:1;">Создать тренировку</button>
+                <button type="button" class="btn-secondary" onclick="toggleCreateForm()" style="flex:1;">Отмена</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- СПИСОК ТРЕНИРОВОК (СКРЫВАЕТСЯ КОГДА ФОРМА ОТКРЫТА) -->
+    <div id="myWorkoutsList" class="workout-list">
+        <div class="empty-state">
+            <span>📋</span>
+            <h3>Нет своих тренировок</h3>
+            <p>Создайте свою первую тренировку!</p>
+        </div>
+    </div>
+</div>
+    </main>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-items">
+            <button class="nav-item" data-tab="stats" onclick="window.location.href='stats.html'">
+                <i class="fa-solid fa-chart-bar"></i>
+            </button>
+            <button class="nav-item active" data-tab="home" onclick="window.location.href='workouts.html'">
+                <i class="fa-solid fa-dumbbell"></i>
+            </button>
+            <button class="nav-item" data-tab="profile" onclick="window.location.href='profile.html'">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!-- ВЕСЬ JS КОД ВНУТРИ HTML (перенесен из workouts.js + auth.js) -->
+    <!-- ============================================================ -->
+    <script>
+        // ===== api.js код =====
+        const API_URL = 'http://localhost:5000/api';
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+        function setToken(token) {
+            localStorage.setItem('token', token);
+        }
+
+        function removeToken() {
+            localStorage.removeItem('token');
+        }
+
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const token = getToken();
+            const options = {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+            };
+            if (token) {
+                options.headers['x-auth-token'] = token;
+            }
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, options);
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Что-то пошло не так');
+                }
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // ===== ПРОВЕРКА АВТОРИЗАЦИИ (из auth.js) =====
+        (async function checkAuth() {
+            const token = getToken();
+            if (!token) {
+                alert('Пожалуйста, войдите в систему');
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const response = await apiRequest('/auth/me', 'GET');
+                console.log('✅ Авторизован как:', response.user);
+            } catch (error) {
+                console.error('Ошибка авторизации:', error);
+                removeToken();
+                alert('Сессия истекла, войдите заново');
+                window.location.href = 'login.html';
+            }
+        })();
+
+        // ===== ВКЛАДКИ (из workouts.js) =====
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                const tab = this.dataset.tab;
+                document.getElementById('tab-' + tab).classList.add('active');
+                if (tab === 'my') {
+                    loadMyWorkouts();
+                }
+            });
+        });
+
+        // ===== КАТЕГОРИИ (из workouts.js) =====
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const name = this.querySelector('.category-info h3')?.textContent;
+                if (name) {
+                    window.location.href = 'workout-detail.html?category=' + encodeURIComponent(name);
+                }
+            });
+        });
+
+function toggleCreateForm() {
+    const form = document.getElementById('createForm');
+    const btn = document.querySelector('.custom-workout');
+    const list = document.getElementById('myWorkoutsList');
+    
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';   // Показываем форму
+        btn.style.display = 'none';     // Скрываем кнопку
+        list.style.display = 'none';    // Скрываем список тренировок
+    } else {
+        form.style.display = 'none';    // Скрываем форму
+        btn.style.display = 'block';    // Показываем кнопку
+        list.style.display = 'block';   // Показываем список тренировок
+    }
+}
+
+        function addExerciseField() {
+            // ПОКА НИЧЕГО НЕ ДЕЛАЕТ
+            // Потом добавим логику
+            alert('Функция добавится позже!');
+        }
+
+        // ===== СОЗДАНИЕ ТРЕНИРОВКИ (из workouts.js) =====
+        document.getElementById('workoutForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('workoutTitle')?.value?.trim();
+            if (!title) {
+                alert('⚠️ Введите название тренировки');
+                return;
+            }
+
+            const exerciseItems = document.querySelectorAll('.exercise-item');
+            const exercises = [];
+            exerciseItems.forEach((item, index) => {
+                const name = item.querySelector('.exercise-name')?.value?.trim();
+                const sets = parseInt(item.querySelector('.exercise-sets')?.value) || 3;
+                const reps = parseInt(item.querySelector('.exercise-reps')?.value) || 10;
+                const weight = parseInt(item.querySelector('.exercise-weight')?.value) || 0;
+                if (name) {
+                    exercises.push({ name, sets, reps, weight, order: index });
+                }
+            });
+
+            if (exercises.length === 0) {
+                alert('⚠️ Добавьте хотя бы одно упражнение');
+                return;
+            }
+
+            try {
+                const workoutData = {
+                    title: title,
+                    notes: document.getElementById('workoutNotes')?.value?.trim() || '',
+                    duration: 0,
+                    exercises: exercises
+                };
+                await apiRequest('/workouts', 'POST', workoutData);
+                alert('✅ Тренировка создана!');
+                toggleCreateForm();
+                document.getElementById('workoutTitle').value = '';
+                document.getElementById('workoutNotes').value = '';
+                document.getElementById('exercisesContainer').innerHTML = '';
+                loadMyWorkouts();
+            } catch (error) {
+                alert('❌ Ошибка: ' + error.message);
+            }
+        });
+
+        // ===== ЗАГРУЗКА МОИХ ТРЕНИРОВОК (из workouts.js) =====
+        async function loadMyWorkouts() {
+            const container = document.getElementById('myWorkoutsList');
+            try {
+                const workouts = await apiRequest('/workouts', 'GET');
+                if (!workouts || workouts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>📋</span>
+                            <h3>Нет своих тренировок</h3>
+                            <p>Создайте свою первую тренировку!</p>
+                        </div>
+                    `;
+                    return;
+                }
+                container.innerHTML = workouts.map(w => `
+                    <div class="workout-card" onclick="viewWorkout('${w._id}')">
+                        <div class="workout-header">
+                            <h3>${w.title}</h3>
+                            <span class="workout-date">${new Date(w.date).toLocaleDateString('ru-RU')}</span>
+                        </div>
+                        <div class="workout-meta">
+                            <span>⏱️ ${w.duration || 0} мин</span>
+                            <span>📋 ${w.exercises?.length || 0} упражнений</span>
+                        </div>
+                        ${w.notes ? `<p class="workout-notes">${w.notes}</p>` : ''}
+                        <div class="workout-actions">
+                            <button class="btn-secondary btn-sm" onclick="event.stopPropagation();viewWorkout('${w._id}')">👁️ Просмотр</button>
+                            <button class="btn-secondary btn-sm" onclick="event.stopPropagation();deleteWorkout('${w._id}')">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                container.innerHTML = `<div class="empty-state error-state"><span>❌</span><h3>Ошибка</h3><p>${error.message}</p></div>`;
+            }
+        }
+
+        // ===== ПРОСМОТР ТРЕНИРОВКИ (из workouts.js) =====
+        async function viewWorkout(id) {
+            try {
+                const workout = await apiRequest('/workouts/' + id, 'GET');
+                const exercisesList = workout.exercises?.map((ex, i) => 
+                    `  ${i+1}. ${ex.name || 'Упражнение'} — ${ex.sets}×${ex.reps}${ex.weight ? ' ('+ex.weight+' кг)' : ''}`
+                ).join('\n') || '  ❌ Нет упражнений';
+                alert(`📋 ${workout.title}\n📅 ${new Date(workout.date).toLocaleDateString('ru-RU')}\n⏱️ ${workout.duration || 0} мин\n📝 ${workout.notes || 'Нет заметок'}\n\nУпражнения:\n${exercisesList}`);
+            } catch (error) {
+                alert('❌ Ошибка загрузки: ' + error.message);
+            }
+        }
+
+        // ===== УДАЛЕНИЕ ТРЕНИРОВКИ (из workouts.js) =====
+        async function deleteWorkout(id) {
+            if (!confirm('Удалить эту тренировку?')) return;
+            try {
+                await apiRequest('/workouts/' + id, 'DELETE');
+                alert('✅ Тренировка удалена');
+                loadMyWorkouts();
+            } catch (error) {
+                alert('❌ Ошибка удаления: ' + error.message);
+            }
+        }
+
+        // Загрузка при открытии вкладки
+        loadMyWorkouts();
+    </script>
+</body>
+</html>

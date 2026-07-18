@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SportApp — Тренировка</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main class="dashboard-container">
+        <!-- ЗАГОЛОВОК -->
+        <header class="dashboard-header">
+            <h1 id="sessionTitle">ТРЕНИРОВКА - ГРУДЬ 1 Lv</h1>
+        </header>
+
+        <!-- СПИСОК УПРАЖНЕНИЙ -->
+        <div class="workout-levels" id="exercisesContainer">
+            <!-- Заполняется через JS -->
+        </div>
+
+        <!-- КНОПКИ СТАРТ / ОТМЕНА -->
+        <div style="display:flex; gap:1rem; margin-top:2rem;">
+            <button class="btn-primary" onclick="startSession()" style="flex:1;">
+                <i class="fa-solid fa-play"></i> Старт
+            </button>
+            <button class="btn-secondary" onclick="window.location.href='workouts.html'" style="flex:1;">
+                <i class="fa-solid fa-xmark"></i> Отмена
+            </button>
+        </div>
+    </main>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-items">
+            <button class="nav-item" onclick="window.location.href='stats.html'">
+                <i class="fa-solid fa-chart-bar"></i>
+            </button>
+            <button class="nav-item active" onclick="window.location.href='workouts.html'">
+                <i class="fa-solid fa-dumbbell"></i>
+            </button>
+            <button class="nav-item" onclick="window.location.href='profile.html'">
+                <i class="fa-solid fa-user"></i>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // ===== ПОЛУЧАЕМ ПАРАМЕТРЫ ИЗ URL =====
+        const urlParams = new URLSearchParams(window.location.search);
+        const category = urlParams.get('category') || 'Грудь';
+        const level = urlParams.get('level') || '1 Lv';
+
+        // ===== ЗАГОЛОВОК =====
+        document.getElementById('sessionTitle').textContent = 'ТРЕНИРОВКА - ' + category.toUpperCase() + ' ' + level;
+
+        // ===== ДАННЫЕ УПРАЖНЕНИЙ ДЛЯ КАЖДОЙ ТРЕНИРОВКИ =====
+        const workoutData = {
+            'Грудь': {
+                '1 Lv': [
+                    { name: 'Отжимания от пола', reps: '12', sets: '3' },
+                    { name: 'Жим гантелей лежа', reps: '10', sets: '3' },
+                    { name: 'Разводка гантелей', reps: '12', sets: '3' }
+                ],
+                '2 Lv': [
+                    { name: 'Жим штанги лежа', reps: '10', sets: '4' },
+                    { name: 'Жим гантелей на наклонной', reps: '12', sets: '3' },
+                    { name: 'Сведение в кроссовере', reps: '15', sets: '3' },
+                    { name: 'Отжимания с весом', reps: '10', sets: '3' }
+                ],
+                '3 Lv': [
+                    { name: 'Жим штанги лежа (макс)', reps: '8', sets: '5' },
+                    { name: 'Жим гантелей на наклонной', reps: '10', sets: '4' },
+                    { name: 'Разводка гантелей', reps: '12', sets: '4' },
+                    { name: 'Сведение в кроссовере', reps: '15', sets: '4' },
+                    { name: 'Отжимания на брусьях', reps: '12', sets: '4' }
+                ]
+            },
+            'Спина': {
+                '1 Lv': [
+                    { name: 'Тяга вертикального блока', reps: '12', sets: '3' },
+                    { name: 'Тяга горизонтального блока', reps: '12', sets: '3' },
+                    { name: 'Гиперэкстензия', reps: '15', sets: '3' }
+                ],
+                '2 Lv': [
+                    { name: 'Подтягивания', reps: '8', sets: '4' },
+                    { name: 'Тяга штанги в наклоне', reps: '10', sets: '4' },
+                    { name: 'Тяга гантели одной рукой', reps: '12', sets: '3' },
+                    { name: 'Гиперэкстензия с весом', reps: '12', sets: '3' }
+                ],
+                '3 Lv': [
+                    { name: 'Подтягивания с весом', reps: '8', sets: '5' },
+                    { name: 'Тяга штанги в наклоне', reps: '10', sets: '5' },
+                    { name: 'Тяга гантели одной рукой', reps: '12', sets: '4' },
+                    { name: 'Тяга вертикального блока', reps: '12', sets: '4' },
+                    { name: 'Гиперэкстензия с весом', reps: '15', sets: '3' }
+                ]
+            },
+            'Ноги': {
+                '1 Lv': [
+                    { name: 'Приседания с весом', reps: '12', sets: '3' },
+                    { name: 'Выпады с гантелями', reps: '10', sets: '3' },
+                    { name: 'Сгибание ног лежа', reps: '15', sets: '3' }
+                ],
+                '2 Lv': [
+                    { name: 'Приседания со штангой', reps: '10', sets: '4' },
+                    { name: 'Румынская тяга', reps: '12', sets: '4' },
+                    { name: 'Жим ногами', reps: '15', sets: '3' },
+                    { name: 'Выпады с гантелями', reps: '12', sets: '3' }
+                ],
+                '3 Lv': [
+                    { name: 'Приседания со штангой (макс)', reps: '8', sets: '5' },
+                    { name: 'Румынская тяга', reps: '10', sets: '5' },
+                    { name: 'Жим ногами', reps: '15', sets: '4' },
+                    { name: 'Выпады с гантелями', reps: '12', sets: '4' },
+                    { name: 'Сгибание ног лежа', reps: '15', sets: '4' }
+                ]
+            },
+            'Плечи': {
+                '1 Lv': [
+                    { name: 'Жим гантелей сидя', reps: '12', sets: '3' },
+                    { name: 'Разведение гантелей', reps: '15', sets: '3' },
+                    { name: 'Тяга к подбородку', reps: '12', sets: '3' }
+                ],
+                '2 Lv': [
+                    { name: 'Жим штанги сидя', reps: '10', sets: '4' },
+                    { name: 'Разведение гантелей', reps: '12', sets: '4' },
+                    { name: 'Тяга к подбородку', reps: '12', sets: '3' },
+                    { name: 'Разведение гантелей на заднюю дельту', reps: '15', sets: '3' }
+                ],
+                '3 Lv': [
+                    { name: 'Жим штанги сидя (макс)', reps: '8', sets: '5' },
+                    { name: 'Разведение гантелей', reps: '12', sets: '4' },
+                    { name: 'Тяга к подбородку', reps: '12', sets: '4' },
+                    { name: 'Разведение гантелей на заднюю дельту', reps: '15', sets: '4' },
+                    { name: 'Жим гантелей сидя', reps: '12', sets: '4' }
+                ]
+            },
+            'Пресс': {
+                '1 Lv': [
+                    { name: 'Скручивания', reps: '20', sets: '3' },
+                    { name: 'Обратные скручивания', reps: '15', sets: '3' },
+                    { name: 'Планка', reps: '30 сек', sets: '3' }
+                ],
+                '2 Lv': [
+                    { name: 'Скручивания с весом', reps: '15', sets: '4' },
+                    { name: 'Подъем ног в висе', reps: '12', sets: '4' },
+                    { name: 'Планка', reps: '45 сек', sets: '3' },
+                    { name: 'Боковая планка', reps: '30 сек', sets: '3' }
+                ],
+                '3 Lv': [
+                    { name: 'Скручивания с весом', reps: '15', sets: '5' },
+                    { name: 'Подъем ног в висе', reps: '15', sets: '4' },
+                    { name: 'Планка', reps: '60 сек', sets: '4' },
+                    { name: 'Боковая планка', reps: '45 сек', sets: '4' },
+                    { name: 'Скручивания с ногами вверх', reps: '20', sets: '4' }
+                ]
+            },
+            'Руки': {
+                '1 Lv': [
+                    { name: 'Сгибание рук с гантелями', reps: '15', sets: '3' },
+                    { name: 'Разгибание рук с гантелью', reps: '15', sets: '3' },
+                    { name: 'Молотки с гантелями', reps: '12', sets: '3' },
+                    { name: 'Отжимания от стены', reps: '20', sets: '3' }
+                ],
+                '2 Lv': [
+                    { name: 'Сгибание рук со штангой', reps: '12', sets: '4' },
+                    { name: 'Французский жим лёжа', reps: '15', sets: '4' },
+                    { name: 'Молотки с гантелями', reps: '12', sets: '4' },
+                    { name: 'Концентрированные сгибания', reps: '12', sets: '3' },
+                    { name: 'Отжимания на брусьях', reps: '10', sets: '4' },
+                    { name: 'Разгибание рук с гантелью сидя', reps: '15', sets: '3' }
+                ],
+                '3 Lv': [
+                    { name: 'Сгибание рук со штангой', reps: '8', sets: '5' },
+                    { name: 'Французский жим лёжа', reps: '10', sets: '5' },
+                    { name: 'Молотки с гантелями', reps: '10', sets: '5' },
+                    { name: 'Концентрированные сгибания', reps: '10', sets: '4' },
+                    { name: 'Отжимания на брусьях', reps: '12', sets: '5' },
+                    { name: 'Сгибание рук за головой с гантелью', reps: '10', sets: '4' },
+                    { name: 'Разгибание рук с гантелью сидя', reps: '12', sets: '4' },
+                    { name: 'Отжимания узким хватом', reps: '15', sets: '4' }
+                ]
+            }
+        };
+
+        // ===== ПОЛУЧАЕМ УПРАЖНЕНИЯ =====
+        const exercises = workoutData[category]?.[level] || [
+            { name: 'Упражнение 1', reps: '10', sets: '3' },
+            { name: 'Упражнение 2', reps: '10', sets: '3' },
+            { name: 'Упражнение 3', reps: '10', sets: '3' }
+        ];
+
+        // ===== ОТРИСОВЫВАЕМ СПИСОК УПРАЖНЕНИЙ =====
+        const container = document.getElementById('exercisesContainer');
+        container.innerHTML = exercises.map((ex, index) => `
+            <div class="level-card" style="cursor:default;">
+                <div class="level-icon" style="background:var(--crimson-light); color:var(--crimson); font-weight:700; font-size:1.2rem;">
+                    ${index + 1}
+                </div>
+                <div class="level-info">
+                    <h3>${ex.name}</h3>
+                    <p>${ex.sets} подходов × ${ex.reps} повторений</p>
+                </div>
+            </div>
+        `).join('');
+
+        // ===== ФУНКЦИЯ СТАРТ =====
+        function startSession() {
+            alert('🏋️ Тренировка началась! Удачи! 💪');
+            // Потом здесь будет таймер и логика
+        }
+    </script>
+</body>
+</html>
